@@ -18,7 +18,14 @@
         color="grey-10"
         icon="eva-camera"
       />
-      <q-file v-else outlined label="Choose Your File" v-model="model">
+      <q-file
+        v-else
+        @input="captureImageFallback"
+        label="Choose Your Image"
+        accept="image/*"
+        v-model="imageUpload"
+        outlined
+      >
         <template v-slot:prepend>
           <q-icon name="eva-attach-outline" />
         </template>
@@ -59,6 +66,7 @@ export default {
         date: Date.now(),
       },
       imageCaptured: false,
+      imageUpload: [],
       hasCameraSupport: true,
     };
   },
@@ -84,6 +92,23 @@ export default {
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       this.imageCaptured = true;
       this.post.photo = this.dataURItoBlob(canvas.toDataURL());
+    },
+    captureImageFallback(file) {
+      this.post.photo = file;
+      let canvas = this.$refs.canvas;
+      let context = canvas.getContext("2d");
+      var reader = new FileReader();
+      reader.onload = (event) => {
+        var img = new Image();
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          context.drawImage(img, 0, 0);
+          this.imageCaptured = true;
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
     },
     dataURItoBlob(dataURI) {
       // convert base64 to raw binary data held in a string
