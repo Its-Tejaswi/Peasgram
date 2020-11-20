@@ -40,9 +40,22 @@
       />
     </div>
     <div class="row justify-center q-ma-md">
-      <q-input v-model="post.location" label="Location" class="col col-sm-6">
+      <q-input
+        :loading="loadingLocation"
+        v-model="post.location"
+        label="Location"
+        class="col col-sm-6"
+      >
         <template v-slot:append>
-          <q-btn round dense flat @click="getLocation" icon="my_location" />
+          <q-btn
+            v-if="!loadingLocation"
+            round
+            filled
+            dense
+            flat
+            @click="getLocation"
+            icon="my_location"
+          />
         </template>
       </q-input>
     </div>
@@ -68,6 +81,7 @@ export default {
       imageCaptured: false,
       imageUpload: [],
       hasCameraSupport: true,
+      loadingLocation: false,
     };
   },
   methods: {
@@ -138,6 +152,7 @@ export default {
       return blob;
     },
     getLocation() {
+      this.loadingLocation = true;
       navigator.geolocation.getCurrentPosition(
         (position) => {
           this.getCityAndCountry(position);
@@ -164,12 +179,15 @@ export default {
       if (result.data.country) {
         this.post.location += `, ${result.data.country}`;
       }
+        this.loadingLocation = false;
     },
     locationError() {
       this.$q.dialog({
+        dark: true,
         title: "Error",
         message: "couldn't find location. ",
       });
+        this.loadingLocation = false;
     },
   },
   mounted() {
